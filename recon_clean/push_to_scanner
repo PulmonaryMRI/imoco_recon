@@ -1,0 +1,1 @@
+/netopt/share/bin/local/prostate/lung/scanner_dicom_push.csh qb3-mr3t {dicom_dir}

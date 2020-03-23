@@ -1,0 +1,5 @@
+iMoCo reconstruction(Matlab_2017):
+
+imoco: all support functions for iMoCo reconstruction
+recon_clean: reconstruction scripts for iMoCo-UTE, *_cc is for coil compression version
+
