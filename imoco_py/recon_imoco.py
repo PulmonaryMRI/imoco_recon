@@ -6,7 +6,7 @@ import numpy as np
 
 import sys
 sys.path.append("./sigpy_mc/")
-import cfl
+import sigpy_e.cfl as cfl
 
 import sigpy_e.ext as ext
 import sigpy_e.prox as prox
