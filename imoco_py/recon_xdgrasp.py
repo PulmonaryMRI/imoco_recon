@@ -4,7 +4,7 @@ import scipy.ndimage as ndimage_c
 import numpy as np
 
 import sys
-sys.path.append("~/tools/sigpy_mc/")
+sys.path.append("./sigpy_e/")
 import sigpy_e.cfl as cfl 
 
 import sigpy_e.ext as ext
