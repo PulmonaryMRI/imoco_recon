@@ -146,7 +146,7 @@ if __name__ == '__main__':
     print('Preconditioner calculation...')
     tmp = PFTSMs.H*PFTSMs*np.complex64(np.ones(tshape))
     L=np.mean(np.abs(tmp))
-    wdata = data[:,0,:,:,:,0]*dcf[:,0,:,:,:,0]
+    wdata = data[:,0,:,:,:,0]*dcf[:,0,:,:,:,0]*1e4
     
     TV = sp.linop.FiniteDifference(PFTSMs.ishape,axes = (0,1,2))
     ####### debug
@@ -168,7 +168,7 @@ if __name__ == '__main__':
         p = (p + sigma*(PFTSMs*X-wdata))/(1+sigma)
         q = (q + sigma*TV*X)
         q = q/(np.maximum(np.abs(q),alpha)/alpha)
-
+        print('outer iter:{}, q:{}'.format(i,np.amax(np.abs(q))))
         X0 = X
         X = X-tau*(1/L*PFTSMs.H*p + lambda_TV*TV.H*q)
         print('outer iter:{}, res:{}'.format(i,np.linalg.norm(X-X0)/np.linalg.norm(X0+1e-9)))
