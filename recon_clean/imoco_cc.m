@@ -105,6 +105,7 @@ end
 
 mc_time = toc
 save([fname_base,'moco_pd',num2str(m_ph),'.mat'],'X','mr_img','Ix');
+save([fname_base,'_X.mat'],'X');
 % I_sg = readcfl_s([fname_base,'_sg']);
 % save([fname_base,'moco_pd.mat'],'X','mr_img','Ix','I_sg');%,'I_sg');
 end

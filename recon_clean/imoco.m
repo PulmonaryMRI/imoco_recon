@@ -47,7 +47,7 @@ kb_scale = (numel(kb_ksp)/((2*width)^3))*ifft3c(kb_ksp);
 
 % estimate motion state
 mr_img = squeeze(mr_img)./max(abs(mr_img(:)));
-mag_b = abs(imgauss4d(mr_img,.5));
+mag_b = imgauss4d(abs(mr_img),.5);
 % motion field interpolation
 mscale = Isize./IsizeL;
 %mscale = permute(mscale,[1 3 4 5 2]);
@@ -105,6 +105,7 @@ end
 
 mc_time = toc
 save([fname_base,'moco_pd',num2str(m_ph),'.mat'],'X','mr_img','Ix');
+save([fname_base,'_X.mat'],'X');
 % I_sg = readcfl_s([fname_base,'_sg']);
 % save([fname_base,'moco_pd.mat'],'X','mr_img','Ix','I_sg');%,'I_sg');
 end
