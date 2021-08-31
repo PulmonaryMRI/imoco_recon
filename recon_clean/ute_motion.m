@@ -10,18 +10,19 @@ addpath /working/larson/xzhu/Lung_data/matlab
 TR = 5; 
 close all;
 
-if(motion_flag==0)
+% load resp bellow signal
+H5_file = [h5name,'.h5'];
+time = h5read(H5_file,'/Gating/TIME_E0');
+%time = h5read(H5_file,'/Gating/time');
+[~,order] = sort(time);
+t_N = length(order);
+    
+resp = h5read(H5_file,'/Gating/RESP_E0');
+%resp = h5read(H5_file,'/Gating/resp');
+resp = resp(order);
+
+if(motion_flag==0) 
     % bellow gating method
-    H5_file = [h5name,'.h5'];
-    time = h5read(H5_file,'/Gating/TIME_E0');
-    %time = h5read(H5_file,'/Gating/time');
-    [~,order] = sort(time);
-    t_N = length(order);
-    
-    resp = h5read(H5_file,'/Gating/RESP_E0');
-    %resp = h5read(H5_file,'/Gating/resp');
-    resp = resp(order);
-    
     motion_signal = resp;
 end
 
@@ -62,7 +63,10 @@ if(motion_flag==2)
     motion_signal = real(U(:,1:eig_num)*diag(S(1:eig_num,1:eig_num))*conj(a));
     motion_signal = interp1(motion_signal([1,1:end,end]),(1:t_N)'/win_len+1);
     plot(motion_signal);
-    flip_flag = (input('Motion signal flip(>=1):')>=1);
+    %flip_flag = (input('Motion signal flip(>=1):')>=1);
+    bellow_signal = (resp - mean(resp))/ std(resp);
+    motion_signal_norm =  (motion_signal - mean(motion_signal))/std(motion_signal);
+    flip_flag = sum(motion_signal_norm.*bellow_signal) < 0;
     motion_signal = motion_signal.*(1-2*flip_flag);
 end
 
