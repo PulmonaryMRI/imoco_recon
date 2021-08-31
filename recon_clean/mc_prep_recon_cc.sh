@@ -21,7 +21,7 @@ bart nufft -a -d $2:$3:$4 $in"_traj" $in"_datac" $in"_imgL"
 bart fft  7 $in"_imgL" $in"_ksp"
 bart cc -M $in"_ksp" $in"_ccMatrix"
 bart ccapply -p $coil $in"_ksp" $in"_ccMatrix" $in"_ksp1"
-bart ccapply -p $coil $in"_data" $in"_ccMatrix" $in"_data1"
+bart ccapply -p $coil $in"_data" $in"_ccMatrix" $in"_data1" 
 bart ccapply -p $coil $in"_datam" $in"_ccMatrix" $in"_data1m"
 bart fmac $in"_data1" $in"_dcf" $in"_datac"
 
