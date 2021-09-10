@@ -4,7 +4,7 @@ function motion_resolved(h5name, motion_flag, nbin, TR, cycle_flag)
 %   h5name: h5 name
 
 % please set the bart/matlab directory
-addpath /working/larson/xzhu/Lung_data/matlab
+%addpath /working/larson/xzhu/Lung_data/matlab
 addpath(genpath('../imoco'))
 
 motion_signal = ute_motion(h5name,motion_flag);
