@@ -1,7 +1,7 @@
 function h5_convert_mTE(H5fname, outfname, nTE, Nx, FOV_scale)
 % load raw data
 % please set the bart/matlab directory
-addpath /working/larson/xzhu/Lung_data/matlab
+%addpath /working/larson/xzhu/Lung_data/matlab
 H5fname = [H5fname , '.h5'];
 
 %% Get data, traj and dcf
