@@ -1,7 +1,7 @@
 import sigpy as sp
 import numpy as np
 import sigpy.mri as mr
-import nft
+import sigpy_e.nft as nft
 
 def jsens_calib(ksp, coord, dcf, ishape, device = sp.Device(-1)):
     img_s = nft.nufft_adj([ksp],[coord],[dcf],device = device,ishape = ishape,id_channel =True)

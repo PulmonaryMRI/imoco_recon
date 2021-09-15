@@ -6,11 +6,8 @@ function [X] = imoco_cc(fname_base,ref_N, TGV_lambda)
 %   X:  is moco recon
 % Xucheng Zhu, Jan 2019
 
-addpath(genpath('/working/larson6/xzhu2/tools/pics'));
+%addpath(genpath('/working/larson6/xzhu2/tools/pics'));
 maxNumCompThreads = 64;
-% fname_base = '/working/larson6/xzhu2/tmp/tmp/MRI_Raw_';
-
-
 
 data = readcfl_s([fname_base,'_data1m']);
 data = single(data/max(abs(data(:))));
