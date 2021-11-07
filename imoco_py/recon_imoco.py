@@ -28,7 +28,7 @@ if __name__ == '__main__':
                         help='scale of FOV y, full res == 1')
     parser.add_argument('--fov_z', type=float, default=1,
                         help='scale of FOV z, full res == 1')
-    parser.add_argument('--n_ref', type=float, default=-1,
+    parser.add_argument('--n_ref', type=int, default=-1,
                         help='reference frame, default is -1.')
     parser.add_argument('--reg_flag', type=int, default=0,
                         help='derive motion field from registration')

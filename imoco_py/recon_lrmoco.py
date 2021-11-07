@@ -6,8 +6,8 @@ import numpy as np
 
 import sys
 # sys.path.append("./sigpy_mc/")
-import cfl 
-import ext
+import sigpy_e.cfl as cfl 
+import sigpy_e.ext as ext
 
 import sigpy_e.prox as prox
 import sigpy_e.reg as reg
@@ -28,7 +28,7 @@ if __name__ == '__main__':
                         help='scale of FOV y, full res == 1')
     parser.add_argument('--fov_z', type=float, default=1,
                         help='scale of FOV z, full res == 1')
-    parser.add_argument('--n_ref', type=float, default=3,
+    parser.add_argument('--n_ref', type=int, default=3,
                         help='reference frame')
     parser.add_argument('--reg_flag', type=int, default=0,
                         help='derive motion field from registration')
