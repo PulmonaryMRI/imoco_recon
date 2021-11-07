@@ -6,6 +6,7 @@ from sigpy.linop import Linop
 from sigpy import backend
 import scipy.ndimage as ndimage
 from scipy.io import loadmat
+import ants
 
 __all__ = ['interp_op', 'interp', 'ANTsReg', 'ANTsAff', 'interp_affine_op']
 
@@ -100,23 +101,36 @@ def ANTsReg4(Is,ref = 0):
     np.save('./iM_field.npy',np.asarray(iM_fields))
 
 def ANTsReg(If,Im,vox_res = [1,1,1], reg_level = [8,4,2], gauss_filt = [2,2,1]):
-    # transfer to nifti
-    Ifnft = nibabel.Nifti1Image(If,affine=np.diag(vox_res+[1]))
-    Imnft = nibabel.Nifti1Image(Im,affine=np.diag(vox_res+[1]))
+#    # transfer to nifti
+#    Ifnft = nibabel.Nifti1Image(If,affine=np.diag(vox_res+[1]))
+#    Imnft = nibabel.Nifti1Image(Im,affine=np.diag(vox_res+[1]))
+#    
+#    nibabel.save(Ifnft,'./tmp_If.nii')
+#    nibabel.save(Imnft,'./tmp_Im.nii')
+    # to antsimage
+    fixed = ants.from_numpy(Im)
+    moving = ants.from_numpy(If)
+#    reg_level_s = 'x'.join([str(t) for t in reg_level])
+#    gauss_filt_s = 'x'.join([str(t) for t in gauss_filt])
+#    ants_cmd = 'antsRegistration -d 3 -m Demons[ {}, {}, 1, 4 ] -t SyN[ 0.1, 5, 3 ] \
+#    -c [ 100x100x40, 1e-6, 10 ] -s {}vox -f {} --winsorize-image-intensities [0.1,1]\
+#    -l 1 -u 1 -z 1 -v -o tmp_'.format('tmp_Im.nii','tmp_If.nii',gauss_filt_s,reg_level_s)
+#    os.system(ants_cmd)
+    # SyN registration
+    regDict = ants.registration(fixed, moving, type_of_transform='SyNOnly', \
+                                syn_metric='demons', syn_sampling=4, \
+                                grad_step=0.1, flow_sigma=5, total_sigma=3,\
+                                reg_iterations=(100,100,40,0), \
+                                verbose=False, outprefix='tmp_', \
+                                w='[0.1,1]')
+    # -s -f -l not matched
     
-    nibabel.save(Ifnft,'./tmp_If.nii')
-    nibabel.save(Imnft,'./tmp_Im.nii')
-    
-    reg_level_s = 'x'.join([str(t) for t in reg_level])
-    gauss_filt_s = 'x'.join([str(t) for t in gauss_filt])
-    ants_cmd = 'antsRegistration -d 3 -m Demons[ {}, {}, 1, 4 ] -t SyN[ 0.1, 5, 3 ] \
-    -c [ 100x100x40, 1e-6, 10 ] -s {}vox -f {} --winsorize-image-intensities [0.1,1]\
-    -l 1 -u 1 -z 1 -v -o tmp_'.format('tmp_Im.nii','tmp_If.nii',gauss_filt_s,reg_level_s)
-    os.system(ants_cmd)
-    M_field = nibabel.load('./tmp_0Warp.nii.gz')
-    iM_field = nibabel.load('./tmp_0InverseWarp.nii.gz')
-    os.remove('./tmp_If.nii')
-    os.remove('./tmp_Im.nii')
+#    M_field = nibabel.load('./tmp_0Warp.nii.gz')
+#    iM_field = nibabel.load('./tmp_0InverseWarp.nii.gz')
+    M_field = nibabel.load('./tmp_1Warp.nii.gz')
+    iM_field = nibabel.load('./tmp_1InverseWarp.nii.gz')
+#    os.remove('./tmp_If.nii')
+#    os.remove('./tmp_Im.nii')
     Mt = -M_field.get_data()
     iMt = -iM_field.get_data()
     Mt[...,:2] = -Mt[...,:2]
