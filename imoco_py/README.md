@@ -17,19 +17,19 @@ echo ${file_dir}
 
 # convert h5
 echo Converting h5
-python /working/larson2/ftan/imoco_recon/imoco_py/convert_uwute_cfl.py ${file_dir}/MRI_Raw
+python imoco_recon/imoco_py/convert_uwute_cfl.py ${file_dir}/MRI_Raw
 
 # run xd-grasp reconstruction
 echo Running XD-GRASP
-python /working/larson2/ftan/imoco_recon/imoco_py/recon_xdgrasp.py ${file_dir}/MRI_Raw --device -1
+python imoco_recon/imoco_py/recon_xdgrasp.py ${file_dir}/MRI_Raw --device -1
 
 # run mocolor reconstruction
 echo Running iMoCo
-python /working/larson2/ftan/imoco_recon/imoco_py/recon_imoco.py ${file_dir}/MRI_Raw --reg_flag 1 --lambda_TV 0.01 --device -1
+python imoco_recon/imoco_py/recon_imoco.py ${file_dir}/MRI_Raw --reg_flag 1 --lambda_TV 0.01 --device -1
 
 # convert into DICOM
 echo Generating DICOM
-python /working/larson2/ftan/imoco_recon/imoco_py/dicom_creation.py ${file_dir}
+python moco_recon/imoco_py/dicom_creation.py ${file_dir}
 ```
 
 ## For GPU
@@ -41,17 +41,17 @@ echo ${file_dir}
 
 # convert h5
 echo Converting h5
-python /working/larson2/ftan/imoco_recon/imoco_py/convert_uwute_cfl.py ${file_dir}/MRI_Raw
+python imoco_recon/imoco_py/convert_uwute_cfl.py ${file_dir}/MRI_Raw
 
 # run xd-grasp reconstruction
 echo Running XD-GRASP
-python /working/larson2/ftan/imoco_recon/imoco_py/recon_xdgrasp.py ${file_dir}/MRI_Raw
+python imoco_recon/imoco_py/recon_xdgrasp.py ${file_dir}/MRI_Raw
 
 # run mocolor reconstruction
 echo Running iMoCo
-python /working/larson2/ftan/imoco_recon/imoco_py/recon_imoco.py ${file_dir}/MRI_Raw --reg_flag 1 --lambda_TV 0.01
+python imoco_recon/imoco_py/recon_imoco.py ${file_dir}/MRI_Raw --reg_flag 1 --lambda_TV 0.01
 
 # convert into DICOM
 echo Generating DICOM
-python /working/larson2/ftan/imoco_recon/imoco_py/dicom_creation.py ${file_dir}
+python imoco_recon/imoco_py/dicom_creation.py ${file_dir}
 ```
