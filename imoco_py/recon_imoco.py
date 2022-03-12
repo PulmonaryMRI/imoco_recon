@@ -169,12 +169,11 @@ if __name__ == '__main__':
         p = (p + sigma*(PFTSMs*X-wdata))/(1+sigma)
         q = (q + sigma*TV*X)
         q = q/(np.maximum(np.abs(q),alpha)/alpha)
-        print('outer iter:{}, q:{}'.format(i,np.amax(np.abs(q))))
         X0 = X
         X = X-tau*(1/L*PFTSMs.H*p + lambda_TV*TV.H*q)
-        print('outer iter:{}, res:{}'.format(i,np.linalg.norm(X-X0)/np.linalg.norm(X0+1e-9)))
-
-    cfl.write_cfl(fname+'_imoco', X)
+        print('outer iter:{}, res:{}'.format(i,np.linalg.norm(X-X0)/np.linalg.norm(X)))
+        
+        cfl.write_cfl(fname+'_imoco', X)
     
 
 

@@ -29,11 +29,6 @@ parser.add_argument('--lambda_TV', type=float, default=5e-2,
 parser.add_argument('--outer_iter', type=int, default=20,
                     help='Num of Iterations.')
 
-parser.add_argument('--vent_flag', type=int, default=0,
-                        help='output jacobian determinant and specific ventilation')
-parser.add_argument('--n_ref', type=int, default=-1,
-                        help='reference frame for jacobian determinant')
-
 parser.add_argument('--device', type=int, default=0,
                     help='Computing device.')
 
@@ -48,8 +43,6 @@ lambda_TV = args.lambda_TV
 device = args.device
 outer_iter = args.outer_iter
 fov_scale = (args.fov_x, args.fov_y, args.fov_z)
-vent_flag = args.vent_flag
-n_ref = args.n_ref
 
 ## data loading
 data = cfl.read_cfl(fname+'_datam')
@@ -110,17 +103,3 @@ for i in range(outer_iter):
     print('outer iter:{}, res:{}'.format(i,np.linalg.norm(q2-q20)/np.linalg.norm(q2)))
 
     cfl.write_cfl(fname+'_mrL', q2)
-
-# jacobian determinant & specific ventilation
-if vent_flag==1:
-    print('Jacobian Determinant and Specific Ventilation...')
-    jacs = []
-    svs = []
-    for i in range(nphase):
-        jac, sv = reg.ANTsJac(np.abs(q2[n_ref]), np.abs(q2[i]))
-        jacs.append(jac)
-        svs.append(sv)
-    jacs = np.asarray(jacs)
-    svs = np.asarray(svs)
-    np.save(fname+'_jac_xdgrasp.npy', jacs)
-    np.save(fname+'_sv_xdgrasp.npy', svs)
