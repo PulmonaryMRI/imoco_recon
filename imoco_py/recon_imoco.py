@@ -107,6 +107,7 @@ if __name__ == '__main__':
         M_fields = np.load(fname+'_M_mr.npy')
         iM_fields = np.load(fname+'_iM_mr.npy')
 
+    # numpy array to list
     iM_fields = [iM_fields[i] for i in range(iM_fields.shape[0])]
     M_fields = [M_fields[i] for i in range(M_fields.shape[0])]
 

@@ -117,18 +117,19 @@ def ANTsReg(If,Im,vox_res = [1,1,1], reg_level = [8,4,2], gauss_filt = [2,2,1]):
 #    -l 1 -u 1 -z 1 -v -o tmp_'.format('tmp_Im.nii','tmp_If.nii',gauss_filt_s,reg_level_s)
 #    os.system(ants_cmd)
     # SyN registration
-    regDict = ants.registration(fixed, moving, type_of_transform='SyNOnly', \
+    reg_dict = ants.registration(fixed, moving, type_of_transform='SyNOnly', \
                                 syn_metric='demons', syn_sampling=4, \
                                 grad_step=0.1, flow_sigma=5, total_sigma=3,\
                                 reg_iterations=(100,100,40,0), \
                                 verbose=False, outprefix='tmp_', \
                                 w='[0.1,1]')
     # -s -f -l not matched
-    
 #    M_field = nibabel.load('./tmp_0Warp.nii.gz')
 #    iM_field = nibabel.load('./tmp_0InverseWarp.nii.gz')
-    M_field = nibabel.load('./tmp_1Warp.nii.gz')
-    iM_field = nibabel.load('./tmp_1InverseWarp.nii.gz')
+#    M_field = nibabel.load('./tmp_1Warp.nii.gz')
+#    iM_field = nibabel.load('./tmp_1InverseWarp.nii.gz')
+    M_field = nibabel.load(reg_dict['fwdtransforms'][0])
+    iM_field = nibabel.load(reg_dict['invtransforms'][-1])
 #    os.remove('./tmp_If.nii')
 #    os.remove('./tmp_Im.nii')
     Mt = -M_field.get_data()
@@ -142,6 +143,35 @@ def ANTsReg(If,Im,vox_res = [1,1,1], reg_level = [8,4,2], gauss_filt = [2,2,1]):
     Mt = M_scale(Mt,If.shape,1/reg_level[-1])
     iMt = M_scale(iMt,If.shape,1/reg_level[-1])
     return Mt,iMt
+
+## get Jacobian, Specific Ventilation
+def ANTsJac(If,Im,vox_res = [1,1,1], reg_level = [8,4,2], gauss_filt = [2,2,1]):
+    # to antsimage
+    fixed = ants.from_numpy(Im)
+    moving = ants.from_numpy(If)
+
+    # SyN registration
+    reg_dict = ants.registration(fixed, moving, type_of_transform='SyNOnly', \
+                                syn_metric='demons', syn_sampling=4, \
+                                grad_step=0.1, flow_sigma=5, total_sigma=3,\
+                                reg_iterations=(100,100,40,0), \
+                                verbose=False, outprefix='tmp_', \
+                                w='[0.1,1]')
+    
+    # Jacobian 
+    jac_ants = ants.create_jacobian_determinant_image(fixed,reg_dict['invtransforms'][-1])
+    jac = jac_ants.numpy()
+    
+    # calculate specific ventilation 
+    reg_ants = reg_dict['warpedfixout']
+    reg = reg_ants.numpy()
+    
+    reg = ndimage.filters.gaussian_filter(reg, (3,3,3), mode='reflect', truncate=1)
+    If = ndimage.filters.gaussian_filter(If, (3,3,3), mode='reflect', truncate=1)
+    
+    sv = (If - reg) / (reg + np.finfo(float).eps)
+
+    return jac, sv
 
 ## Demons registration
 def imgrad3d(I):
