@@ -17,7 +17,7 @@ echo ${file_dir}
 
 # convert h5
 echo Converting h5
-python imoco_recon/imoco_py/convert_uwute_cfl.py ${file_dir}/MRI_Raw
+python imoco_recon/imoco_py/convert_uwute.py ${file_dir}/MRI_Raw
 
 # run xd-grasp reconstruction
 echo Running XD-GRASP
@@ -41,7 +41,7 @@ echo ${file_dir}
 
 # convert h5
 echo Converting h5
-python imoco_recon/imoco_py/convert_uwute_cfl.py ${file_dir}/MRI_Raw
+python imoco_recon/imoco_py/convert_uwute.py ${file_dir}/MRI_Raw
 
 # run xd-grasp reconstruction
 echo Running XD-GRASP
