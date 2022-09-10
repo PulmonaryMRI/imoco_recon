@@ -136,7 +136,7 @@ if __name__ == '__main__':
     for i in range(nphase):
         Is.append(sp.linop.Identity(tshape))
         FTs = NFTs((nCoil,)+tshape,traj[i,0,0,...],device=sp.Device(device))
-        M = reg.interp_op(tshape,iM_fields[i])
+        M = reg.interp_op(tshape,M_fields[i])
         M = DLD(M,device=sp.Device(device))
         W = sp.linop.Multiply((nCoil,npe,nfe,),dcf[i,0,0,:,:,0]) 
         FTSM = W*FTs*S*M
