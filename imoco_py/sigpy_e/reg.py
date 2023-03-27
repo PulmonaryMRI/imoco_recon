@@ -102,30 +102,34 @@ def ANTsReg4(Is,ref = 0):
     np.save('./iM_field.npy',np.asarray(iM_fields))
 
 def ANTsReg(If,Im,vox_res = [1,1,1], reg_level = [8,4,2], gauss_filt = [2,2,1]):
-    # to antsimage
+
     fixed = ants.from_numpy(Im)
     moving = ants.from_numpy(If)
-
-    # SyN registration
+    
     tmp_dir = 'tmp{}_'.format(np.random.randint(0,1e4))
     
-    reg_dict = ants.registration(fixed, moving, type_of_transform='SyNOnly', \
+    reg_dict = ants.registration(fixed, moving, type_of_transform='SyNOnly', initial_transform="identity",\
                                 syn_metric='demons', syn_sampling=4, \
                                 grad_step=0.1, flow_sigma=5, total_sigma=3,\
                                 reg_iterations=(100,100,40,20,10), \
                                 verbose=False, outprefix=tmp_dir, \
-                                w='[0.1,1]')
-    
-    # get deformation field
+                                w='[0.1,1]', write_composite_transform=False)
+    # -s -f -l not matched
     M_field = nibabel.load(reg_dict['fwdtransforms'][0])
     iM_field = nibabel.load(reg_dict['invtransforms'][-1])
-
+    
     Mt = M_field.get_fdata()
     iMt = iM_field.get_fdata()
     
+    #Mt = -M_field.get_fdata()
+    #iMt = -iM_field.get_fdata()
+    #Mt[...,:2] = -Mt[...,:2]
+    #iMt[...,:2] = -iMt[...,:2]
+    
     Mt = np.squeeze(Mt)
     iMt = np.squeeze(iMt)
-    
+    #Mt = M_scale(Mt,If.shape,1/reg_level[-1])
+    #iMt = M_scale(iMt,If.shape,1/reg_level[-1])
     fileList = glob.glob(tmp_dir + '*')
     # Iterate over the list of filepaths & remove each file.
     for filePath in fileList:
@@ -133,8 +137,8 @@ def ANTsReg(If,Im,vox_res = [1,1,1], reg_level = [8,4,2], gauss_filt = [2,2,1]):
             os.remove(filePath)
         except:
             continue
-        
-    return Mt,iMt
+    
+    return Mt, iMt
 
 ## get Jacobian, Specific Ventilation
 def ANTsJac(If,Im,vox_res = [1,1,1], reg_level = [8,4,2], gauss_filt = [2,2,1]):
@@ -164,6 +168,7 @@ def ANTsJac(If,Im,vox_res = [1,1,1], reg_level = [8,4,2], gauss_filt = [2,2,1]):
     
     sv = (If - reg) / (reg + np.finfo(float).eps)
     
+
     # Get a list of all the file paths that ends with .txt from in specified directory
     fileList = glob.glob(tmp_dir + '*')
     # Iterate over the list of filepaths & remove each file.
@@ -304,7 +309,7 @@ class interp_op(Linop):
         device = backend.get_device(input)
 
         with device:
-            return interp(input, self.M_field, device)
+            return interp(input, self.M_field, device, 1) # major change
 
     def _adjoint_linop(self):
         device = backend.get_device(input)
@@ -354,7 +359,12 @@ def interp(I, M_field, device = sp.Device(-1), k_id = 1, deblur = True):
     
     g_device = device
     I = sp.to_device(input=I,device=g_device)
-    I = sp.interp.interpolate(I,k_wid,kernel,M_field.astype(np.float64))
+    from importlib_metadata import version
+    if version('sigpy') <= '0.1.16':
+        I = sp.interp.interpolate(I,k_wid,kernel,M_field.astype(np.float64)) # v0.1.16 (input, width, kernel, coord)
+    else:    
+        M_field_device = sp.to_device(input=M_field.astype(np.float64), device=g_device) # v0.1.17
+        I = sp.interp.interpolate(input=I,coord=M_field_device) # v0.1.17 (input, coord, kernel='spline', width=2, param=1)
     # deconv
     if deblur is True:
         sp.conv.convolve(I,dkernel)

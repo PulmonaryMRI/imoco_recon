@@ -31,7 +31,7 @@ class GLR(prox.Prox):
     def _prox(self, alpha, input):
         u,s,vh = np.linalg.svd(input,full_matrices=False)
         s_max = np.max(s)
-        # print('Eigen Value:{}'.format(np.diag(s)))
+        #print('Eigen Value:{}'.format(np.diag(s)))
         s_t = thresh.soft_thresh(self.lamda * alpha*s_max, s)
         return np.matmul(u, s_t[...,None]*vh)
     

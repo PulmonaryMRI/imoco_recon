@@ -6,7 +6,7 @@ from sigpy import backend
 
 __all__ = ['NFTs']
 
-def Vstacks(L_Linop ,oshape, ishape):
+def Vstacks(L_Linop, oshape, ishape):
     assert oshape[0]==len(L_Linop), 'Number of Linop mismatch!'
     
     Linops = sp.linop.Vstack(L_Linop)
@@ -22,7 +22,23 @@ def Vstacks(L_Linop ,oshape, ishape):
     
     return Linops
 
-def Diags(L_Linop ,oshape, ishape):
+def Hstacks(L_Linop, oshape, ishape):
+    # assert oshape[0]==len(L_Linop), 'Number of Linop mismatch!'
+    
+    Linops = sp.linop.Hstack(L_Linop)
+    i_vec_len = 1
+    for tmp in ishape:
+        i_vec_len = i_vec_len * tmp
+    o_vec_len = 1
+    for tmp in oshape:
+        o_vec_len = o_vec_len * tmp
+    
+    R2 = sp.linop.Reshape(oshape=(i_vec_len,),ishape=ishape)
+    Linops = Linops*R2
+    
+    return Linops
+
+def Diags(L_Linop, oshape, ishape):
     assert oshape[0]==ishape[0], 'First dim mismatch!'
     assert oshape[0]==len(L_Linop), 'Number of Linop mismatch!'
     Linops = sp.linop.Diag(L_Linop)
