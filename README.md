@@ -14,8 +14,9 @@ Zhu, X, Chan, M, Lustig, M, Johnson, KM, Larson, PEZ. Iterative motion-compensat
    * ./imoco : iMoCo reconstruction in Matlab.
    * ./recon_clean : iMoCo reconstruction preparation, including coil calibration, motion resolved reconstruction, carried out by BART (https://github.com/mrirecon/bart.git).
    * ./imoco_py : python based iMoCo reconstruction. Sigpy and ANTs are required.
+   * ./imoco_npy: python based iMoCo reconstruction. Sigpy and ANTs are required. Support numpy array as I/O.
 
-### python packages version requied
+### python packages version required
    * numpy==1.17.4
    * cupy==6.0.0
    * sigpy==0.1.16
