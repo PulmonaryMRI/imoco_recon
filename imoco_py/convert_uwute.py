@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 '''
 modified from https://github.com/mikgroup/extreme_mri_data/blob/master/convert_uwute.py
 '''
