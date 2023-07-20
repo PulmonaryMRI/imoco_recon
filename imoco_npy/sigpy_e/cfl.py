@@ -23,7 +23,7 @@ def read_cfl_header(name):
 
 def read_cfl(name):
     shape = read_cfl_header(name)
-    n = np.prod(shape, dtype=np.int)
+    n = np.prod(shape, dtype=int)
 
     # load data and reshape into shape
     with open(name + ".cfl", "r") as d:
