@@ -241,31 +241,29 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser(
          description='Converts UWUTE h5 files to npy arrays in natural time ordering.')
     
-    parser.add_argument('h5_file', type=str)
-    parser.add_argument('folder', type=str)
+    parser.add_argument('fname', type=str)
+    parser.add_argument('--folder', type=str, default = os.getcwd())
     parser.add_argument('--tr', type=float, default = 0.0037, help='TR in seconds.')
     parser.add_argument('--bins', type=int, default = 6, help='number of bins')
     parser.add_argument('--resp_polar', type=float, default = -1, help='Polarization of respiratory motion +1 or -1')
     args = parser.parse_args()
     
     
+    fname = args.fname
+    h5_file = fname + '.h5'
     folder = args.folder
-    #h5_file = os.path.join(folder, 'MRI_Raw.h5')
-    h5_file = os.path.join(args.h5_file, 'MRI_Raw.h5')
     tr = args.tr
     bins = args.bins
     resp_polar = args.resp_polar
+
     logging.basicConfig(level=logging.INFO)
-    
+
+    # convert h5
+    logging.info('Converting H5.')
+
     # convert h5 
     with h5py.File(h5_file, 'r') as hf:
         ksp, coord, dcf = convert_uwute(hf)
-        
-    logging.info('Saving data.')
-    os.makedirs(folder, exist_ok=True)
-    # np.save(os.path.join(folder, 'ksp.npy'), ksp)
-    # np.save(os.path.join(folder, 'coord.npy'), coord)
-    # np.save(os.path.join(folder, 'dcf.npy'), dcf)
     
     # respiratory signal
     logging.info('Extracting respiratory signal.')
@@ -276,6 +274,12 @@ if __name__=='__main__':
     # binning
     logging.info('Motion resolved binning.')
     bksp, bcoord, bdcf = pr_binning(ksp, coord, dcf, resp, tr, bins)
+
+    logging.info('Saving data.')
+    os.makedirs(folder, exist_ok=True)
+    # np.save(os.path.join(folder, 'ksp.npy'), ksp)
+    # np.save(os.path.join(folder, 'coord.npy'), coord)
+    # np.save(os.path.join(folder, 'dcf.npy'), dcf)
     np.save(os.path.join(folder, 'bksp.npy'), bksp)
     np.save(os.path.join(folder, 'bcoord.npy'), bcoord)
     np.save(os.path.join(folder, 'bdcf.npy'), bdcf)
