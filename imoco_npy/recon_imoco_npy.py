@@ -41,7 +41,7 @@ if __name__ == '__main__':
                         help='Num of outer iterations.')
     parser.add_argument('--device', type=int, default=0,
                         help='Computing device.')
-    parser.add_argument('--fname', type=str, default='',
+    parser.add_argument('fname', type=str,
                         help='Prefix of raw data and output(_mocolor).')
     args = parser.parse_args()
 
