@@ -16,10 +16,18 @@ Zhu, X, Chan, M, Lustig, M, Johnson, KM, Larson, PEZ. Iterative motion-compensat
    * ./imoco_py : python based iMoCo reconstruction. Sigpy and ANTs are required.
    * ./imoco_npy: python based iMoCo reconstruction. Sigpy and ANTs are required. Support numpy array as I/O.
 
-### python packages version required
-   * numpy==1.17.4
-   * cupy==6.0.0
-   * sigpy==0.1.16
+### python packages required
+Tested with Python 3.10.6
+   * numpy
+   * cupy
+   * sigpy
+   * h5py
+   * pydicom
+   * antspyx
+   * numba
+   * tqdm
+   * scipy
+
 
 ## Sample dataset
 

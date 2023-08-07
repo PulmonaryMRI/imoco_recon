@@ -39,7 +39,7 @@ parser.add_argument('--n_ref_vent', type=int, default=0,
 parser.add_argument('--device', type=int, default=0,
                     help='Computing device.')
 
-parser.add_argument('--fname', type=str, default='',
+parser.add_argument('fname', type=str,
                     help='Prefix of raw data and output(_mrL).')
 args = parser.parse_args()
 
@@ -86,7 +86,7 @@ mps = ext.jsens_calib(ksp,coord,dcf2,device = sp.Device(device),ishape = tshape)
 S = sp.linop.Multiply(tshape, mps)
 
 ### recon
-print('starting pre-recon')
+print('starting prep')
 PFTSs = []
 for i in range(nphase):
     FTs = NFTs((nCoil,)+tshape,traj[i,...],device=sp.Device(device))
