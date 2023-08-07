@@ -87,6 +87,11 @@ if __name__ == '__main__':
     mps = ext.jsens_calib(ksp,coord,dcf2,device = sp.Device(device),ishape = tshape)
     S = sp.linop.Multiply(tshape, mps)
 
+    # Delete some unused arrays to save memory
+    dcf2 = None
+    ksp = None
+    coord = None
+
     imgL = cfl.read_cfl(fname+'_mrL')
     imgL = np.squeeze(imgL)
 
@@ -94,18 +99,24 @@ if __name__ == '__main__':
     print('Registration...')
     M_fields = []
     iM_fields = []
-    if reg_flag is 1:
+    if reg_flag == 1:
         for i in range(nphase):
             M_field, iM_field = reg.ANTsReg(np.abs(imgL[n_ref]), np.abs(imgL[i]))
             M_fields.append(M_field)
             iM_fields.append(iM_field)
         M_fields = np.asarray(M_fields)
         iM_fields = np.asarray(iM_fields)
-        np.save(fname+'_M_mr.npy',M_fields)
-        np.save(fname+'_iM_mr.npy',iM_fields)
-    else:
-        M_fields = np.load(fname+'_M_mr.npy')
-        iM_fields = np.load(fname+'_iM_mr.npy')
+    #     np.save(fname+'_M_mr.npy',M_fields)
+    #     np.save(fname+'_iM_mr.npy',iM_fields)
+    # else:
+    #     M_fields = np.load(fname+'_M_mr.npy')
+    #     iM_fields = np.load(fname+'_iM_mr.npy')
+
+    # Delete some unused arrays to save memory
+    M_field = None
+    iM_field = None
+    imgL = None
+    mps = None
 
     # numpy array to list
     iM_fields = [iM_fields[i] for i in range(iM_fields.shape[0])]
@@ -152,8 +163,23 @@ if __name__ == '__main__':
     TV = sp.linop.FiniteDifference(PFTSMs.ishape,axes = (0,1,2))
     ####### debug
     print('TV dim:{}'.format(TV.oshape))
-    proxg = sp.prox.UnitaryTransform(sp.prox.L1Reg(TV.oshape, lambda_TV), TV)
+    #proxg = sp.prox.UnitaryTransform(sp.prox.L1Reg(TV.oshape, lambda_TV), TV)
     
+    # Delete some unused arrays to save memory
+    dcf = None
+    traj = None
+    tmp = None
+    S = None
+    Is = None
+    Ms = None
+    M0s = None
+    M = None
+    W = None
+    FTs = None
+    FTSM = None
+    M_fields = None
+    iM_fields = None
+
     # ADMM
     print('Recon...')
     alpha = np.max(np.abs(PFTSMs.H*wdata))

@@ -41,7 +41,7 @@ if __name__ == '__main__':
                         help='Num of outer iterations.')
     parser.add_argument('--device', type=int, default=0,
                         help='Computing device.')
-    parser.add_argument('fname', type=str,
+    parser.add_argument('--fname', type=str, default='',
                         help='Prefix of raw data and output(_mocolor).')
     args = parser.parse_args()
 
@@ -58,6 +58,7 @@ if __name__ == '__main__':
     reg_flag = args.reg_flag
 
     ## data loading
+    print('loading data')
     data = np.load(os.path.join(fname, 'bksp.npy'))
     traj = np.real(np.load(os.path.join(fname, 'bcoord.npy')))
     dcf = np.sqrt(np.load(os.path.join(fname,'bdcf.npy')))
@@ -88,6 +89,12 @@ if __name__ == '__main__':
     mps = ext.jsens_calib(ksp,coord,dcf2,device = sp.Device(device),ishape = tshape)
     S = sp.linop.Multiply(tshape, mps)
 
+    # Delete some unused arrays to save memory
+    dcf2 = None
+    ksp = None
+    coord = None
+
+
     imgL = np.load(os.path.join(fname, 'prL.npy'))
     imgL = np.abs(np.squeeze(imgL))
     imgL = imgL/np.max(imgL)
@@ -96,7 +103,7 @@ if __name__ == '__main__':
     print('Registration...')
     M_fields = []
     iM_fields = []
-    if reg_flag is 1:
+    if reg_flag == 1:
         for i in range(nphase):
             M_field, iM_field = reg.ANTsReg(np.abs(imgL[n_ref]), np.abs(imgL[i]))
             M_fields.append(M_field)
@@ -108,6 +115,12 @@ if __name__ == '__main__':
    # else:
    #     M_fields = np.load(fname+'_M_mr.npy')
    #     iM_fields = np.load(fname+'_iM_mr.npy')
+
+    # Delete some unused arrays to save memory
+    M_field = None
+    iM_field = None
+    imgL = None
+    mps = None
 
     # numpy array to list
     iM_fields = [iM_fields[i] for i in range(iM_fields.shape[0])]
@@ -155,8 +168,23 @@ if __name__ == '__main__':
     TV = sp.linop.FiniteDifference(PFTSMs.ishape,axes = (0,1,2))
     ####### debug
     print('TV dim:{}'.format(TV.oshape))
-    proxg = sp.prox.UnitaryTransform(sp.prox.L1Reg(TV.oshape, lambda_TV), TV)
+    # proxg = sp.prox.UnitaryTransform(sp.prox.L1Reg(TV.oshape, lambda_TV), TV)
     
+    # Delete some unused arrays to save memory
+    dcf = None
+    traj = None
+    tmp = None
+    S = None
+    Is = None
+    Ms = None
+    M0s = None
+    M = None
+    W = None
+    FTs = None
+    FTSM = None
+    M_fields = None
+    iM_fields = None
+
     # ADMM
     print('Recon...')
     alpha = np.max(np.abs(PFTSMs.H*wdata))
