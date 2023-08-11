@@ -2,6 +2,7 @@
 Conversion of numpy array output of imoco recon to DICOM series - adapted from imoco_py/dicom_creation.py
 Command line inputs needed: raw data (numpy array) directory; original DICOM directory
 Modified by: Neil J Stewart njstewart-eju (2023/04)
+Original author: Fei Tan (ftan1)
 """
 import numpy as np
 import pydicom as pyd
