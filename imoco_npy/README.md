@@ -21,11 +21,11 @@ python imoco_recon/imoco_npy/convert_uwute_npy.py ${file_dir}/MRI_Raw
 
 # run xd-grasp reconstruction
 echo Running XD-GRASP
-python imoco_recon/imoco_npy/recon_xdgrasp_npy.py ${file_dir}/MRI_Raw --device -1
+python imoco_recon/imoco_npy/recon_xdgrasp_npy.py ${file_dir} --device -1
 
 # run mocolor reconstruction
 echo Running iMoCo
-python imoco_recon/imoco_npy/recon_imoco_npy.py ${file_dir}/MRI_Raw --reg_flag 1 --lambda_TV 0.01 --device -1
+python imoco_recon/imoco_npy/recon_imoco_npy.py ${file_dir} --reg_flag 1 --lambda_TV 0.01 --device -1
 
 # convert into DICOM
 echo Generating DICOM
@@ -45,11 +45,11 @@ python imoco_recon/imoco_npy/convert_uwute_npy.py ${file_dir}/MRI_Raw
 
 # run xd-grasp reconstruction
 echo Running XD-GRASP
-python imoco_recon/imoco_npy/recon_xdgrasp_npy.py ${file_dir}/MRI_Raw
+python imoco_recon/imoco_npy/recon_xdgrasp_npy.py ${file_dir}
 
 # run mocolor reconstruction
 echo Running iMoCo
-python imoco_recon/imoco_npy/recon_imoco_npy.py ${file_dir}/MRI_Raw --reg_flag 1 --lambda_TV 0.01
+python imoco_recon/imoco_npy/recon_imoco_npy.py ${file_dir}--reg_flag 1 --lambda_TV 0.01
 
 # convert into DICOM
 echo Generating DICOM

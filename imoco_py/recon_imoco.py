@@ -112,12 +112,6 @@ if __name__ == '__main__':
     #     M_fields = np.load(fname+'_M_mr.npy')
     #     iM_fields = np.load(fname+'_iM_mr.npy')
 
-    # Delete some unused arrays to save memory
-    M_field = None
-    iM_field = None
-    imgL = None
-    mps = None
-
     # numpy array to list
     iM_fields = [iM_fields[i] for i in range(iM_fields.shape[0])]
     M_fields = [M_fields[i] for i in range(M_fields.shape[0])]
@@ -168,17 +162,7 @@ if __name__ == '__main__':
     # Delete some unused arrays to save memory
     dcf = None
     traj = None
-    tmp = None
-    S = None
-    Is = None
-    Ms = None
-    M0s = None
-    M = None
-    W = None
-    FTs = None
-    FTSM = None
-    M_fields = None
-    iM_fields = None
+    data = None
 
     # ADMM
     print('Recon...')

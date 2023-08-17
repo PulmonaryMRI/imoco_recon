@@ -45,7 +45,6 @@ outer_iter = args.outer_iter
 fov_scale = (args.fov_x, args.fov_y, args.fov_z)
 
 ## data loading
-print('loading data')
 data = cfl.read_cfl(fname+'_datam')
 traj = np.real(cfl.read_cfl(fname+'_trajm'))
 dcf = cfl.read_cfl(fname+'_dcf2m')
@@ -67,7 +66,6 @@ tshape = (int(np.max(traj[...,0])-np.min(traj[...,0]))
           ,int(np.max(traj[...,2])-np.min(traj[...,2])))
 
 ### calibration
-print('starting calibration')
 ksp = np.reshape(np.transpose(data,(2,1,0,3,4,5)),(nCoil,nphase*npe,nfe))
 dcf2 = np.reshape(np.transpose(dcf**2,(2,1,0,3,4,5)),(nphase*npe,nfe))
 coord = np.reshape(np.transpose(traj,(2,1,0,3,4,5)),(nphase*npe,nfe,3))
@@ -76,7 +74,6 @@ mps = ext.jsens_calib(ksp,coord,dcf2,device = sp.Device(device),ishape = tshape)
 S = sp.linop.Multiply(tshape, mps)
 
 ### recon
-print('starting pre-recon')
 PFTSs = []
 for i in range(nphase):
     FTs = NFTs((nCoil,)+tshape,traj[i,0,0,...],device=sp.Device(device))
@@ -92,7 +89,6 @@ L=np.mean(np.abs(tmp))
 
 
 ## reconstruction
-print('starting recon')
 q2 = np.zeros((nphase,)+tshape,dtype=np.complex64)
 Y = np.zeros_like(wdata)
 q20 = np.zeros_like(q2)
