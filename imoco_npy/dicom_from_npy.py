@@ -22,6 +22,9 @@ if __name__ == '__main__':
     im = np.transpose(im, axes=[0, 2, 1])
     #im = np.transpose(im[:, ::-1, ::-1], axes=[0, 2, 1])
 
+    # Uncomment this line to flipe images up-down
+    #im = np.flip(im,0)
+
     # load original dicom
     # exam number, series number
     dcm_ls = glob.glob(orig_dicom_dir + '/*.dcm')
