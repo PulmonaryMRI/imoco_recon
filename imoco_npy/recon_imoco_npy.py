@@ -58,6 +58,7 @@ if __name__ == '__main__':
     reg_flag = args.reg_flag
 
     ## data loading
+    print('loading data')
     data = np.load(os.path.join(fname, 'bksp.npy'))
     traj = np.real(np.load(os.path.join(fname, 'bcoord.npy')))
     dcf = np.sqrt(np.load(os.path.join(fname,'bdcf.npy')))
@@ -75,9 +76,9 @@ if __name__ == '__main__':
     dcf = dcf[...,:nf_e]
 
     nphase,nCoil,npe,nfe = data.shape
-    tshape = (np.int(np.max(traj[...,0])-np.min(traj[...,0]))
-              ,np.int(np.max(traj[...,1])-np.min(traj[...,1]))
-              ,np.int(np.max(traj[...,2])-np.min(traj[...,2])))
+    tshape = (int(np.max(traj[...,0])-np.min(traj[...,0]))
+              ,int(np.max(traj[...,1])-np.min(traj[...,1]))
+              ,int(np.max(traj[...,2])-np.min(traj[...,2])))
 
     ## calibration
     print('Calibration...')
@@ -88,6 +89,11 @@ if __name__ == '__main__':
     mps = ext.jsens_calib(ksp,coord,dcf2,device = sp.Device(device),ishape = tshape)
     S = sp.linop.Multiply(tshape, mps)
 
+    # Delete some unused arrays to save memory
+    dcf2 = None
+    ksp = None
+    coord = None
+
     imgL = np.load(os.path.join(fname, 'prL.npy'))
     imgL = np.abs(np.squeeze(imgL))
     imgL = imgL/np.max(imgL)
@@ -96,7 +102,7 @@ if __name__ == '__main__':
     print('Registration...')
     M_fields = []
     iM_fields = []
-    if reg_flag is 1:
+    if reg_flag == 1:
         for i in range(nphase):
             M_field, iM_field = reg.ANTsReg(np.abs(imgL[n_ref]), np.abs(imgL[i]))
             M_fields.append(M_field)
@@ -155,8 +161,13 @@ if __name__ == '__main__':
     TV = sp.linop.FiniteDifference(PFTSMs.ishape,axes = (0,1,2))
     ####### debug
     print('TV dim:{}'.format(TV.oshape))
-    proxg = sp.prox.UnitaryTransform(sp.prox.L1Reg(TV.oshape, lambda_TV), TV)
+    # proxg = sp.prox.UnitaryTransform(sp.prox.L1Reg(TV.oshape, lambda_TV), TV)
     
+    # Delete some unused arrays to save memory
+    dcf = None
+    traj = None
+    data = None
+
     # ADMM
     print('Recon...')
     alpha = np.max(np.abs(PFTSMs.H*wdata))

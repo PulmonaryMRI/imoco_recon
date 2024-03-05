@@ -325,7 +325,7 @@ class interp_op(Linop):
 def interp(I, M_field, device = sp.Device(-1), k_id = 1, deblur = True):
     # b spline interpolation
     N = 64
-    if k_id is 0:
+    if k_id == 0:
         kernel = [(3*(x/N)**3-6*(x/N)**2+4)/6 for x in range(0,N)]+[(2-x/N)**3/6 for x in range(N,2*N)]
         dkernel = np.array([-.2,1.4,-.2])
         
@@ -341,7 +341,7 @@ def interp(I, M_field, device = sp.Device(-1), k_id = 1, deblur = True):
     ndim = M_field.shape[-1]
     
     # 2d/3d
-    if ndim is 3:
+    if ndim == 3:
         dkernel = dkernel[:,None,None]*dkernel[None,:,None]*dkernel[None,None,:]
         Nx,Ny,Nz = I.shape
         my,mx,mz = np.meshgrid(np.arange(Ny),np.arange(Nx),np.arange(Nz))

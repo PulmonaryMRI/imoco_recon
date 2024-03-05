@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Thu Mar 18 15:52:56 2021
@@ -86,6 +85,6 @@ if __name__ == '__main__':
    	    ds.SliceLocation = SliceLocation_original + (im_shape[0]/2 - (z+1)) * spatial_resolution;
    	    ds.ImagePositionPatient = pyd.multival.MultiValue(float, [float(ImagePositionPatient_original[0]), float(ImagePositionPatient_original[1]), ImagePositionPatient_original[2] - (im_shape[0]/2 - (z+1)) * spatial_resolution])
    	    b = im[z,:,:].astype('<u2')
-   	    ds.PixelData = b.T.tostring()
+   	    ds.PixelData = b.T.tobytes()
    	    #ds.is_little_endian = False
    	    ds.save_as(Filename)

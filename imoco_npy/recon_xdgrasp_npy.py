@@ -54,6 +54,7 @@ vent_flag = args.vent_flag
 n_ref_vent = args.n_ref_vent
 
 ## data loading
+print('loading data')
 data = np.load(os.path.join(fname, 'bksp.npy'))
 traj = np.real(np.load(os.path.join(fname, 'bcoord.npy')))
 dcf = np.sqrt(np.load(os.path.join(fname,'bdcf.npy')))
@@ -71,19 +72,21 @@ data = data[...,:nf_e]
 dcf = dcf[...,:nf_e]
 
 nphase,nCoil,npe,nfe = data.shape
-tshape = (np.int(np.max(traj[...,0])-np.min(traj[...,0]))
-          ,np.int(np.max(traj[...,1])-np.min(traj[...,1]))
-          ,np.int(np.max(traj[...,2])-np.min(traj[...,2])))
+tshape = (int(np.max(traj[...,0])-np.min(traj[...,0]))
+          ,int(np.max(traj[...,1])-np.min(traj[...,1]))
+          ,int(np.max(traj[...,2])-np.min(traj[...,2])))
 
 ### calibration
+print('starting calibration')
 ksp = np.reshape(np.transpose(data,(1,0,2,3)),(nCoil,nphase*npe,nfe))
 dcf2 = np.reshape(dcf**2,(nphase*npe,nfe))
 coord = np.reshape(traj,(nphase*npe,nfe,3))
 
-mps = ext.jsens_calib(ksp,coord,dcf2,device = sp.Device(0),ishape = tshape)
+mps = ext.jsens_calib(ksp,coord,dcf2,device = sp.Device(device),ishape = tshape)
 S = sp.linop.Multiply(tshape, mps)
 
 ### recon
+print('starting prep')
 PFTSs = []
 for i in range(nphase):
     FTs = NFTs((nCoil,)+tshape,traj[i,...],device=sp.Device(device))
@@ -99,6 +102,7 @@ L=np.mean(np.abs(tmp))
 
 
 ## reconstruction
+print('starting recon')
 q2 = np.zeros((nphase,)+tshape,dtype=np.complex64)
 Y = np.zeros_like(wdata)
 q20 = np.zeros_like(q2)

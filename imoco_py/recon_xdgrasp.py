@@ -61,9 +61,9 @@ data = data[...,:nf_e,:]
 dcf = dcf[...,:nf_e,:]
 
 nphase,nEcalib,nCoil,npe,nfe,_ = data.shape
-tshape = (np.int(np.max(traj[...,0])-np.min(traj[...,0]))
-          ,np.int(np.max(traj[...,1])-np.min(traj[...,1]))
-          ,np.int(np.max(traj[...,2])-np.min(traj[...,2])))
+tshape = (int(np.max(traj[...,0])-np.min(traj[...,0]))
+          ,int(np.max(traj[...,1])-np.min(traj[...,1]))
+          ,int(np.max(traj[...,2])-np.min(traj[...,2])))
 
 ### calibration
 ksp = np.reshape(np.transpose(data,(2,1,0,3,4,5)),(nCoil,nphase*npe,nfe))
