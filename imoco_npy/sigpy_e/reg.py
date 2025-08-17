@@ -10,6 +10,7 @@ from scipy import linalg
 import ants
 
 import numpy as np, torch, fireants
+import torch.nn.functional as F
 import SimpleITK as sitk
 import fireants.registration
 from fireants.io import Image, BatchedImages
@@ -146,42 +147,67 @@ def ANTsReg(If,Im,vox_res = [1,1,1], reg_level = [8,4,2], gauss_filt = [2,2,1]):
     return Mt, iMt
 
 # GPU Based Registration using FireANTs
-def FireANTsReg(If, Im,
-                reg_level=[16, 8, 4, 2, 1],
-                iters=[100, 100, 80, 40, 20],
-                smooth_grad_sigma=1.0,
-                smooth_warp_sigma=0.25):
+def FireANTsReg(If_xyz, Im_xyz, vox_res=[1,1,1], reg_level=[16,8,4,2,1], gauss_filt=[2,2,1]):
 
-    dev = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    dev = "cuda" if torch.cuda.is_available() else "cpu"
 
-    fixed_img  = Image(sitk.GetImageFromArray(Im.astype(np.float32)), device=dev)
-    moving_img = Image(sitk.GetImageFromArray(If.astype(np.float32)), device=dev)
-    fixed, moving = BatchedImages([fixed_img]), BatchedImages([moving_img])
+    # (x,y,z) to FireANTs's internal (z,y,x)
+    Im_zyx = np.transpose(np.asarray(Im_xyz, dtype=np.float32), (2, 1, 0))
+    If_zyx = np.transpose(np.asarray(If_xyz, dtype=np.float32), (2, 1, 0))
 
-    syn = fireants.registration.SyNRegistration(
-        scales            = reg_level,
-        iterations        = iters,
-        fixed_images      = fixed,
-        moving_images     = moving,
-        loss_type         = "cc",
-        optimizer         = "Adam",
-        optimizer_lr      = 0.1,
-        smooth_grad_sigma = smooth_grad_sigma,
-        smooth_warp_sigma = smooth_warp_sigma,
+    fixed_itk = sitk.GetImageFromArray(Im_zyx)
+    fixed_itk.SetSpacing(tuple(map(float, vox_res))); fixed_itk.SetOrigin((0.0, 0.0, 0.0))
+    moving_itk = sitk.GetImageFromArray(If_zyx)
+    moving_itk.SetSpacing(tuple(map(float, vox_res))); moving_itk.SetOrigin((0.0, 0.0, 0.0))
+
+    fixed_b = BatchedImages([Image(fixed_itk,  device=dev)])
+    moving_b = BatchedImages([Image(moving_itk, device=dev)])
+
+    iterations = [100, 100, 40, 20, 10][:len(reg_level)]
+    sgs = float(gauss_filt[-1]) if gauss_filt else 1.0
+
+    reg = fireants.registration.SyNRegistration(
+        scales=list(reg_level), 
+        iterations=iterations,
+        fixed_images=fixed_b,
+        moving_images=moving_b,
+        loss_type="cc",
+        cc_kernel_size=5,
+        deformation_type="compositive",
+        optimizer="Adam",
+        optimizer_lr=0.1,
+        smooth_grad_sigma=sgs,
+        blur=True,
     )
-    syn.optimize()
+    reg.optimize(save_transformed=False)
 
-    # Pull forward and inverse warps. Convert to float32 (Z,Y,X,3)
-    def tidy(warp_tensor):
-        arr = warp_tensor.detach().cpu().numpy() # (C, Z, Y, X)
-        if arr.shape[0] == 3:
-            arr = np.moveaxis(arr, 0, -1) # (Z, Y, X, 3)
-        return arr[..., [2, 1, 0]].astype(np.float32)
+    dims = 3
+    fixed_id = F.affine_grid(torch.eye(dims, dims+1, device=dev)[None],  fixed_b().shape,  align_corners=True)[0]
+    moving_id = F.affine_grid(torch.eye(dims, dims+1, device=dev)[None],  moving_b().shape, align_corners=True)[0]
+    fixed_t2p, moving_t2p = fixed_b.get_torch2phy()[0], moving_b.get_torch2phy()[0]
 
-    Mt  = tidy(syn.fwd_warp.get_warp()[0])
-    iMt = tidy(syn.rev_warp.get_warp()[0])
+    def t2p(A, coords):
+        shp = coords.shape[:-1]
+        c = coords.reshape(-1, dims)
+        c = (c @ A[:dims, :dims].T) + A[:dims, 3]
+        return c.reshape(*shp, dims)
 
-    return Mt, iMt
+    coords_fwd_t = reg.get_warped_coordinates(fixed_b, moving_b)[0]
+    moved_fwd_p = t2p(moving_t2p, fixed_id + (coords_fwd_t - fixed_id))
+    id_fixed_p = t2p(fixed_t2p,  fixed_id)
+
+    Mt_zyx3 = (moved_fwd_p - id_fixed_p).detach().cpu().numpy().astype(np.float32)
+
+    coords_inv_t = reg.get_warped_coordinates(moving_b, fixed_b)[0]
+    moved_inv_p = t2p(fixed_t2p,  moving_id + (coords_inv_t - moving_id))
+    id_move_p = t2p(moving_t2p, moving_id)
+    iMt_zyx3 = (moved_inv_p - id_move_p).detach().cpu().numpy().astype(np.float32)
+
+    # (z,y,x) back to (x,y,z) for the pipeline
+    Mt_xyz3 = np.transpose(Mt_zyx3,  (2, 1, 0, 3))
+    iMt_xyz3 = np.transpose(iMt_zyx3, (2, 1, 0, 3))
+
+    return np.squeeze(Mt_xyz3), np.squeeze(iMt_xyz3)
 
 ## get Jacobian, Specific Ventilation
 def ANTsJac(If,Im,vox_res = [1,1,1], reg_level = [8,4,2], gauss_filt = [2,2,1]):
