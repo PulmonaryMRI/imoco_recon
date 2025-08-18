@@ -104,7 +104,8 @@ if __name__ == '__main__':
     iM_fields = []
     if reg_flag == 1:
         for i in range(nphase):
-            M_field, iM_field = reg.ANTsReg(np.abs(imgL[n_ref]), np.abs(imgL[i]))
+            # M_field, iM_field = reg.ANTsReg(np.abs(imgL[n_ref]), np.abs(imgL[i]))
+            M_field, iM_field = reg.FireANTsReg(np.abs(imgL[n_ref]), np.abs(imgL[i]))
             M_fields.append(M_field)
             iM_fields.append(iM_field)
         M_fields = np.asarray(M_fields)

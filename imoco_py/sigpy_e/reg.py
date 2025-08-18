@@ -9,6 +9,12 @@ from scipy.io import loadmat
 from scipy import linalg
 import ants
 
+import numpy as np, torch, fireants
+import torch.nn.functional as F
+import SimpleITK as sitk
+import fireants.registration
+from fireants.io import Image, BatchedImages
+
 __all__ = ['interp_op', 'interp', 'ANTsReg', 'ANTsAff', 'interp_affine_op']
 
 def M_scale2(M, oshape, scale = 1):
@@ -139,6 +145,69 @@ def ANTsReg(If,Im,vox_res = [1,1,1], reg_level = [8,4,2], gauss_filt = [2,2,1]):
             continue
     
     return Mt, iMt
+
+# GPU Based Registration using FireANTs
+def FireANTsReg(If_xyz, Im_xyz, vox_res=[1,1,1], reg_level=[16,8,4,2,1], gauss_filt=[2,2,1]):
+
+    dev = "cuda" if torch.cuda.is_available() else "cpu"
+
+    # (x,y,z) to FireANTs's internal (z,y,x)
+    Im_zyx = np.transpose(np.asarray(Im_xyz, dtype=np.float32), (2, 1, 0))
+    If_zyx = np.transpose(np.asarray(If_xyz, dtype=np.float32), (2, 1, 0))
+
+    fixed_itk = sitk.GetImageFromArray(Im_zyx)
+    fixed_itk.SetSpacing(tuple(map(float, vox_res))); fixed_itk.SetOrigin((0.0, 0.0, 0.0))
+    moving_itk = sitk.GetImageFromArray(If_zyx)
+    moving_itk.SetSpacing(tuple(map(float, vox_res))); moving_itk.SetOrigin((0.0, 0.0, 0.0))
+
+    fixed_b = BatchedImages([Image(fixed_itk,  device=dev)])
+    moving_b = BatchedImages([Image(moving_itk, device=dev)])
+
+    iterations = [100, 100, 40, 20, 10][:len(reg_level)]
+    sgs = float(gauss_filt[-1]) if gauss_filt else 1.0
+
+    reg = fireants.registration.SyNRegistration(
+        scales=list(reg_level), 
+        iterations=iterations,
+        fixed_images=fixed_b,
+        moving_images=moving_b,
+        loss_type="cc",
+        cc_kernel_size=5,
+        deformation_type="compositive",
+        optimizer="Adam",
+        optimizer_lr=0.1,
+        smooth_grad_sigma=sgs,
+        blur=True,
+    )
+    reg.optimize(save_transformed=False)
+
+    dims = 3
+    fixed_id = F.affine_grid(torch.eye(dims, dims+1, device=dev)[None],  fixed_b().shape,  align_corners=True)[0]
+    moving_id = F.affine_grid(torch.eye(dims, dims+1, device=dev)[None],  moving_b().shape, align_corners=True)[0]
+    fixed_t2p, moving_t2p = fixed_b.get_torch2phy()[0], moving_b.get_torch2phy()[0]
+
+    def t2p(A, coords):
+        shp = coords.shape[:-1]
+        c = coords.reshape(-1, dims)
+        c = (c @ A[:dims, :dims].T) + A[:dims, 3]
+        return c.reshape(*shp, dims)
+
+    coords_fwd_t = reg.get_warped_coordinates(fixed_b, moving_b)[0]
+    moved_fwd_p = t2p(moving_t2p, fixed_id + (coords_fwd_t - fixed_id))
+    id_fixed_p = t2p(fixed_t2p,  fixed_id)
+
+    Mt_zyx3 = (moved_fwd_p - id_fixed_p).detach().cpu().numpy().astype(np.float32)
+
+    coords_inv_t = reg.get_warped_coordinates(moving_b, fixed_b)[0]
+    moved_inv_p = t2p(fixed_t2p,  moving_id + (coords_inv_t - moving_id))
+    id_move_p = t2p(moving_t2p, moving_id)
+    iMt_zyx3 = (moved_inv_p - id_move_p).detach().cpu().numpy().astype(np.float32)
+
+    # (z,y,x) back to (x,y,z) for the pipeline
+    Mt_xyz3 = np.transpose(Mt_zyx3,  (2, 1, 0, 3))
+    iMt_xyz3 = np.transpose(iMt_zyx3, (2, 1, 0, 3))
+
+    return np.squeeze(Mt_xyz3), np.squeeze(iMt_xyz3)
 
 ## get Jacobian, Specific Ventilation
 def ANTsJac(If,Im,vox_res = [1,1,1], reg_level = [8,4,2], gauss_filt = [2,2,1]):
